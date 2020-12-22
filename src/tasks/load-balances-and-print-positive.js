@@ -1,5 +1,6 @@
-const { getAccountInfo } = require('utils/api');
-const { storeBalances, printBalances } = require('balances/service');
+const { getAccountInfo } = require('utils/api/test');
+const { printBalances } = require('balances/utils');
+const { setBalances } = require('balances/storage');
 
 async function loadBalancesAndPrintPositive() {
   let accountInfo;
@@ -11,9 +12,11 @@ async function loadBalancesAndPrintPositive() {
     return;
   }
 
-  if (Array.isArray(accountInfo.data.balances)) {
-    storeBalances(accountInfo.data.balances);
-    printBalances({ printPositive: true });
+  const balances = accountInfo.data.balances;
+
+  if (Array.isArray(balances)) {
+    setBalances(balances);
+    printBalances(balances, { printPositive: true });
   } 
 }
 

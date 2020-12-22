@@ -1,8 +1,35 @@
-const { createListenKey, renewListenKey } = require('utils/api');
-const { createSocket } = require('utils/socket');
-const { handleBalancesEvent } = require('balances/service');
+const { createListenKey, renewListenKey } = require('utils/api/test');
+const { createTestnetSocket } = require('utils/socket');
+const { printBalances } = require('balances/utils');
+const { getBalances, setBalance } = require('balances/storage');
 
-const TWENTY_MINUTES_IN_MSEC = 1200000;
+const LISTEN_KEY_REFRESH_INTERVAL_MSEC = 1200000; // 20 minutes
+
+const eventHandlersMap = {
+  // probably we should handle the "balanceUpdate" event too
+  // in this case just add handler and the event here
+  'outboundAccountPosition': handleAccountUpdate,
+};
+
+function handleAccountUpdate(eventPayload) {
+  const balance = eventPayload.B[0];
+
+  setBalance(balance.a, {
+    free: balance.f,
+    locked: balance.l,
+  });
+}
+
+function handleBalancesEvent(eventPayload) {
+  const handler = eventHandlersMap[eventPayload.e];
+
+  if (!handler) {
+    return;
+  }
+
+  handler(eventPayload);
+  printBalances(getBalances());
+}
 
 async function refreshListenKey() {
   try {
@@ -25,23 +52,11 @@ module.exports = async function watchBalancesEvents() {
 
   listenKey = listenKey.data.listenKey;
 
-  const ws = createSocket(listenKey);
+  const ws = createTestnetSocket(listenKey);
 
-  ws.on('open', function open(dto) {
-    console.log('Listen to balances updates');
-  });
-  
-  ws.on('close', function close() {
-    console.log('Cancel listening balances updates');
-  });
-  
-  ws.on('message', function incoming(data) {
-    console.log('event', data);
-    handleBalancesEvent(data);
-  });
+  ws.on('open', () => { /* console.log('Listen to balances updates'); */ });
+  ws.on('close', () => { /* console.log('Cancel listening balances updates'); */ });
+  ws.on('message', data => { handleBalancesEvent(JSON.parse(data)); });
 
-  // refresh listenKey every 20 minutes
-  // TODO: add error handling
-  setInterval(refreshListenKey, TWENTY_MINUTES_IN_MSEC);
+  setInterval(refreshListenKey, LISTEN_KEY_REFRESH_INTERVAL_MSEC);
 }
-
