@@ -35,22 +35,22 @@ async function refreshListenKey() {
   try {
     await renewListenKey();
   } catch (err) {
-    console.log('Some error has happened during listen key refreshing', err.response.data);
+    console.log('Some error has happened during listen key refreshing', err);
     return;
   }
 }
 
 module.exports = async function watchBalancesEvents() {
-  let listenKey;
+  let response;
   
   try {
-    listenKey = await createListenKey();
+    response = await createListenKey();
   } catch (err) {
-    console.log('Some error has happened during listen key obtaining', err.response.data);
+    console.log('Some error has happened during listen key obtaining', err);
     return;
   }
 
-  listenKey = listenKey.data.listenKey;
+  const listenKey = response.listenKey;
 
   const ws = createTestnetSocket(listenKey);
 

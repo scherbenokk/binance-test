@@ -8,11 +8,11 @@ async function loadBalancesAndPrintPositive() {
   try {
     accountInfo = await getAccountInfo();
   } catch (err) {
-    console.log('Some error has happened', err.response.data);
+    console.log('Some error has happened', err);
     return;
   }
 
-  const balances = accountInfo.data.balances;
+  const balances = accountInfo.balances;
 
   if (Array.isArray(balances)) {
     setBalances(balances);

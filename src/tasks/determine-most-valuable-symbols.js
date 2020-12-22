@@ -7,11 +7,9 @@ module.exports = async function determineMostValuableSymbols(symbolsNumber) {
   try {
     statistics = await get24hrStatistics();
   } catch (err) {
-    console.log('Some error has happened during statistics obtaining', err.response.data);
+    console.log('Some error has happened during statistics obtaining', err);
     return [];
   }
-
-  statistics = statistics.data;
 
   return [...statistics].sort((a, b) => {
     if (parseFloat(a.volume) > parseFloat(b.volume)) {

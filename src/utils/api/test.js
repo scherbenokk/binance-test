@@ -1,4 +1,4 @@
-const axios = require('axios');
+const configureHttps = require('utils/https');
 const { generateSignature } = require('../test.crypto');
 
 const { TESTNET_API_KEY } = process.env;
@@ -7,7 +7,7 @@ if (!TESTNET_API_KEY) {
   throw new Error('Missing env param: TESTNET_API_KEY');
 }
 
-const http = axios.create({
+const https = configureHttps({
   baseURL: 'https://testnet.binance.vision/api/v3',
   headers: { "X-MBX-APIKEY": TESTNET_API_KEY },
 });
@@ -21,13 +21,13 @@ module.exports = {
 function getAccountInfo() {
   const apiParamsString = `timestamp=${Date.now()}`;
 
-  return http.get(`/account?${apiParamsString}&signature=${generateSignature(apiParamsString)}`);
+  return https.get(`/account?${apiParamsString}&signature=${generateSignature(apiParamsString)}`);
 }
 
 function createListenKey() {
-  return http.post('/userDataStream');
+  return https.post('/userDataStream');
 }
 
 function renewListenKey() {
-  return http.put('/userDataStream');
+  return https.put('/userDataStream');
 }
